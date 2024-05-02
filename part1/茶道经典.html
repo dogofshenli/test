@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>茶的前世今生：从起源到发展</title>
+<link href="default3.css" rel="stylesheet" type="text/css" media="all"/>
+<link href="animate.css" rel="stylesheet" type="text/css" media="all"/>
+<style>
+	.modal {
+		display: none; 
+		position: fixed; 
+		z-index: 1;
+		left: 0;
+		top: 0;
+		width: 100%; 
+		height: 100%; 
+		overflow: auto; 
+		background-color: rgb(0,0,0); 
+		background-color: rgba(0,0,0,0.4); 
+	}
+
+	.modal-content {
+		background: url(images/part1-bg1.jpg);
+		background-size: 100% 100%;
+		margin: 15% auto; 
+		padding: 20px;
+		border: 1px solid #888;
+		width: 80%; 
+	}
+	.close {
+		color: #aaa;
+		float: right;
+		font-size: 28px;
+		font-weight: bold;
+	}
+
+	.close:hover,
+	.close:focus {
+		color: black;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	#chart-container {
+		height: 100vh;
+	}
+</style>
+</head>
+
+
+<body>
+<div id="header-wrapper">
+	<div id="header" class="container">
+		<div id="logo">
+			<h1><img src="images/logo.png"></h1>
+		</div>
+		<div id="menu">
+			<ul>
+				<li><a href="茶史速览.html" >茶史速览</a></li>
+				<li><a href="茶文集萃.html" >茶文集萃</a></li>
+				<li class="active"><a href="茶道经典.html" >茶道经典</a></li>
+			</ul>
+		</div>
+	</div>
+	<div id="banner" class="container"><span></span></div>
+</div>
+
+
+<div id="wrapper">
+    <div id="chart-container"></div>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalImage"></div>
+            <div id="modalText"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+</div>
+<script>
+	const chartData = {
+		name: '茶书',
+		children: [
+			{
+				name: '唐代',
+				children: [
+					{ name: '《茶经》' },
+					{ name: '《煎茶水记》' },
+					{ name: '《采茶录》' },
+					{ name: '《十六汤品》' },
+					{ name: '《茶谱》（唐）' }
+				]
+			},
+			{
+				name: '宋代',
+				children: [
+					{ name: '《大观茶论》' },
+					{ name: '《茶录》（宋）' },
+					{ name: '《宣和北苑贡茶录》' },
+					{ name: '《茶具图赞》' },
+					{ name: '《东溪试茶录》' },
+					{ name: '《品茶要录》' },
+					{ name: '《北苑别录》' },
+					{ name: '《斗茶记》' },
+					{ name: '《本朝茶法》' }
+]
+			},
+			{
+				name: '明代',
+				children:[
+					{ name: '《茶录》（明）' },
+					{ name: '《茶谱》（明）' },
+					{ name: '《茶考》' },
+					{ name: '《茶书全集》'},
+					{ name: '《煮泉小品》' },
+					{ name: '《茶说》' },
+					{ name: '《茶董补》' },
+					{ name: '《茗谭》' },
+					{ name: '《虎丘茶经注补》' }
+]
+			},
+			{
+				name: '清代',
+				children: [
+					{ name: '《续茶经》' },
+					{ name: '《龙井访茶记》' },
+					{ name: '《整饬皖茶文牍》' },
+					{ name: '《茶史》' },
+					{ name: '《清代贡茶研究》' },
+					{ name: '《中国茶书：清》（上下）' },
+					{ name: '《岕茶汇钞》' },
+					{ name: '《茶话》' }
+]
+			},
+		]
+	};
+function showModal(imageUrl, author, description) {
+const modalContent = document.querySelector(".modal-content");
+modalContent.innerHTML = `
+	<span class="close">&times;</span>
+	<div style="display: flex;">
+		<div style="flex: 1;">
+			<img src="${imageUrl}" alt="Image" style="max-width: 100%; height: auto;">
+		</div>
+		<div style="flex: 2; padding-left: 10px;">
+			<p><strong>作者：</strong>${author}</p>
+			<p><strong>简介：</strong>${description}</p>
+		</div>
+	</div>
+`;
+document.getElementById("myModal").style.display = "block";
+const closeBtn = document.querySelector(".modal-content .close");
+closeBtn.onclick = function() {
+	document.getElementById("myModal").style.display = "none";
+};
+}
+
+	class TreeNode {
+		constructor(name, imageSrc, description) {
+			this.name = name;
+			this.imageSrc = imageSrc;
+			this.description = description;
+		}
+
+		handleClick() {
+			showModal(this.imageSrc, this.description);
+		}
+	}
+
+	function createTreeNodes(data) {
+		const nodes = [];
+		for (const child of data.children) {
+			const node = new TreeNode(child.name, `${child.name.toLowerCase()}_image.jpg`, `This is ${child.name}.`);
+			nodes.push(node);
+		}
+		return nodes;
+	}
+
+	const treeNodes = createTreeNodes(chartData);
+	const myChart = echarts.init(document.getElementById('chart-container'));
+	const option = {
+		tooltip: {
+			trigger: 'item',
+			formatter: function(params) {
+        return params.data.name; // 显示节点名称
+    }
+		},
+		series: [{
+			type: 'tree',
+			data: [chartData],
+			left: '2%',
+			right: '2%',
+			top: '8%',
+			bottom: '20%',
+			symbol: 'emptyCircle',
+			symbolSize: 25,
+			orient: 'vertical',
+			expandAndCollapse: true,
+			label: {
+				position: 'left',
+				rotate: 0,
+				verticalAlign: 'middle',
+				align: 'right',
+				fontSize: 15,
+			},
+			leaves: {
+				label: {
+					position: 'bottom',
+					rotate:-90,
+					verticalAlign: 'middle',
+					align: 'left'
+				}
+			},
+			animationDurationUpdate: 750
+		}]
+	};
+
+	myChart.setOption(option);
+	const modal = document.getElementById("myModal");
+	modal.onclick = function(event) {
+if (event.target === closeBtn) {
+	modal.style.display = "none";
+}
+};
+
+
+	const nodeActions = {
+'《茶经》': { 
+	imageSrc: 'images/茶经.jpg',
+	author: '陆羽，唐代。',
+	description: '《茶经》是世界上第一部系统论述茶叶的专著，共分三卷十章，详细介绍了茶的历史、种植、制作、品饮及器具等，被誉为茶学的百科全书。陆羽因此被后世尊称为“茶圣”。'
+},
+'《煎茶水记》': { 
+	imageSrc: 'images/煎茶水记.jpg',
+	author: '张又新，唐代',
+	description: '《煎茶水记》是唐代张又新所著的茶书，主要讨论了泡茶用水的质量和等级，将适宜泡茶的水分为二十等，对后世茶文化有着重要的影响。'
+},
+'《采茶录》': { 
+	imageSrc: 'images/《采茶录》.jpg',
+	author: '温庭筠，唐代。',
+	description: '《采茶录》由晚唐著名诗人温庭筠撰写，书中记载了关于茶的逸事和故事，虽然现存文本不全，但体现了唐代文人对茶文化的精致追求和深刻理解。'
+},
+'《十六汤品》': { 
+	imageSrc: 'images/《十六汤品》.jpg',
+	author: '苏廙（字元明），唐代。',
+	description: '《十六汤品》是苏廙所著，该书根据水受热后的变化、燃料、容器等对汤进行了分类，展现了唐代对茶汤品质的细致研究，对茶文化有着特别的贡献。'
+},
+'《茶谱》（唐）': { 
+	imageSrc: 'images/《茶谱》.jpg',
+	author: '毛文锡，五代蜀。',
+	description: '《茶谱》由五代时期的毛文锡所著，是继陆羽《茶经》之后的又一部重要茶书，对茶的种植、制作、品饮等方面进行了系统的阐述，对后世茶文化的发展产生了深远影响。'
+},
+
+'《大观茶论》': { 
+	imageSrc: 'images/《大观茶论》.jpg',
+	author: '赵佶（宋徽宗），宋代。',
+	description: '《大观茶论》是宋徽宗赵佶所著的关于茶的专论，成书于大观元年（1107年），全书共二十篇，详细记述了北宋时期蒸青团茶的产地、采制、烹试、品质、斗茶风尚等，对宋代茶道有深刻见解，是研究宋代茶文化的重要文献。'
+},
+'《茶录》（宋）': { 
+	imageSrc: 'images/《茶录》蔡襄.jpg',
+	author: '蔡襄，宋代。',
+	description: '《茶录》由北宋蔡襄撰写，成书于北宋皇佑年间（1049—1053年），全书分为上、下两篇，上篇论茶，下篇论器，主要论述茶汤品质和烹饮方法，是继陆羽《茶经》之后最有影响的论茶专著。'
+},
+'《宣和北苑贡茶录》': { 
+	imageSrc: 'images/《宣和北苑贡茶录》.jpg',
+	author: '熊蕃，宋代。',
+	description: '《宣和北苑贡茶录》由熊蕃撰写，其子熊克增补，主要记述北苑贡茶的历史与贡品情况，详细记载了宋代北苑贡茶的采摘、焙制与进贡法式，为研究宋代贡茶制度的重要文献。'
+},
+'《茶具图赞》': { 
+	imageSrc: 'images/《茶具图赞》.jpg',
+	author: '审安老人，宋代。',
+	description: '《茶具图赞》由审安老人所著，书中将宋代常用的十二种茶具冠以官职名称，并附以图片，加以著录，对宋代茶艺之事较为关注，并与当时的社会文化相联系。'
+},
+'《东溪试茶录》': { 
+	imageSrc: 'images/《东溪试茶录》.jpg',
+	author: '宋子安，宋代。',
+	description: '《东溪试茶录》由宋子安所著，是宋代的茶书之一，详细记载了茶叶的品鉴和试茶的方法，为研究宋代茶文化提供了重要资料。'
+},
+'《品茶要录》': { 
+	imageSrc: 'images/《品茶要录》.jpg',
+	author: '黄儒，宋代。',
+	description: '《品茶要录》由宋代黄儒所著，书中对茶叶的品质进行了详细的论述，是研究宋代茶叶品鉴的重要文献。'
+},
+'《北苑别录》': { 
+	imageSrc: 'images/《北苑别录》.jpg',
+	author: '赵汝砺，宋代。',
+	description: '《北苑别录》由赵汝砺所著，详细记载了宋代北苑贡茶的品种、制作工艺及品鉴方法，是研究宋代贡茶文化的重要著作。'
+},
+'《斗茶记》': { 
+	imageSrc: 'images/《斗茶记》.jpg',
+	author: '唐庚，宋代。',
+	description: '《斗茶记》由唐庚所著，书中记载了宋代斗茶的事宜，反映了宋代茶文化中的斗茶风尚，是了解宋代茶事活动的重要文献。'
+},
+'《本朝茶法》': { 
+	imageSrc: 'images/《本朝茶法》.jpg',
+	author: '沈括，宋代。',
+	description: '《本朝茶法》由沈括所著，讨论了宋代的茶法，对当时茶叶的生产、税收等方面有所涉及，为研究宋代茶政提供了重要信息。'
+},
+
+'《茶录》（明）': { 
+	imageSrc: 'images/《茶录》张源.jpg',
+	author: '张源，明代。',
+	description: '《茶录》由明代张源所著，书中详细记载了明代散茶的采摘、制作、品饮方法，强调了茶的自然本味，对后世茶文化有较大影响。'
+},
+'《茶谱》（明）': { 
+	imageSrc: 'images/《茶谱》朱权.jpg',
+	author: '朱权，明代。',
+	description: '《茶谱》由明太祖朱元璋之子朱权所著，书中提倡以自然的方式品饮茶，反对过度加工，强调茶的自然之性，对明代及以后的饮茶风尚产生了深远的影响。'
+},
+'《茶考》': { 
+	imageSrc: 'images/《茶考》.jpg',
+	author: '陈师，明代。',
+	description: '《茶考》由明代陈师撰写，书中对茶的历史、种类、制作工艺以及品饮艺术等进行了详细考辨，是明代重要的茶学著作。'
+},
+'《茶书全集》': { 
+	imageSrc: 'images/《茶书全集》.jpg',
+	author: '喻政，明代。',
+	description: '《茶书全集》由明代喻政编纂，收录了古今多种茶书，是明代茶书的集大成者，对研究明代及以前的茶文化具有重要价值。'
+},
+'《煮泉小品》': { 
+	imageSrc: 'images/《煮泉小品》.jpg',
+	author: '田艺蘅，明代。',
+	description: '《煮泉小品》由明代田艺蘅所著，书中对煮茶用水的讲究及对茶的品鉴有独到见解，反映了明代文人雅士对茶道的追求。'
+},
+'《茶说》': { 
+	imageSrc: 'images/《茶说》.jpg',
+	author: '张谦德，明代。',
+	description: '《茶说》由明代张谦德撰写，书中讨论了茶的种植、制作、品饮等，体现了作者对茶的深刻理解和个人体会，是明代茶学的重要著作。'
+},
+'《茶董补》': { 
+	imageSrc: 'images/《茶董补》.jpg',
+	author: '陈继儒，明代。',
+	description: '《茶董补》由明代陈继儒所著，是对前人《茶董》的补充和注解，书中对茶的种类、制作工艺、品饮艺术等进行了补充说明，是明代茶文化研究的参考资料。'
+},
+'《茗谭》': { 
+	imageSrc: 'images/《茗谭》.jpg',
+	author: '徐勃，明代。',
+	description: '《茗谭》由明代徐勃所著，书中记载了作者对茶的品鉴和感悟，反映了明代文人对茶文化的精神追求和审美情趣，是明代茶学的重要著作。'
+},
+'《续茶经》': { 
+	imageSrc: 'images/《续茶经》.jpg',
+	author: '陆廷灿，清代。',
+	description: '《续茶经》是陆廷灿根据陆羽《茶经》的体例续写的茶学专著，成书于雍正十二年（1734年），全书分上中下三卷及附录，详细记述了茶叶的生产、制作、品饮等，是清代重要的茶学著作。'
+},
+'《龙井访茶记》': { 
+	imageSrc: 'images/《龙井访茶记》.jpg',
+	author: '程淯，清代。',
+	description: '《龙井访茶记》由程淯撰写，详细记述了龙井茶的土性、栽植、采摘、焙制等，是关于龙井茶的专门著作，对了解龙井茶的历史和文化有重要价值。'
+},
+'《整饬皖茶文牍》': { 
+	imageSrc: 'images/《整饬皖茶文牍》.jpg',
+	author: '程雨亭，清代。',
+	description: '《整饬皖茶文牍》由程雨亭所著，详细记载了清末外销出口茶叶的“着色掺杂”现象及进口茶机、改良茶叶品质的史实，为研究清代茶业提供了第一手资料。'
+},
+'《茶史》': { 
+	imageSrc: 'images/《茶史》.jpg',
+	author: '刘源长，清代。',
+	description: '《茶史》由刘源长撰写，成书于清康熙年间，全书两卷，上卷记茶品，下卷记饮茶，虽体例杂，但提供了丰富的茶史资料，对研究茶文化有参考价值。'
+},
+'《清代贡茶研究》': { 
+	imageSrc: 'images/《清代贡茶研究》.jpg',
+	author: '不详。',
+	description: '《清代贡茶研究》是研究清代贡茶制度的专著，探讨了清代帝王对贡茶的重视及贡茶体系的文化累积，对了解清代贡茶文化有重要意义。'
+},
+'《中国茶书：清》（上下）': { 
+	imageSrc: 'images/《中国茶书：清》（上下）.jpg',
+	author: '不详。',
+	description: '《中国茶书：清》是关于清代茶书的合集，具体作者不详，书籍汇集了清代的茶学著作，为研究清代茶文化提供了宝贵的文献资料。'
+},
+'《虎丘茶经注补》': { 
+	imageSrc: 'images/《虎丘茶经注补》.jpg',
+	author: '陈鉴，明代。',
+	description: '《虎丘茶经注补》由清代陈鉴所著，对陆羽《茶经》进行了补充和注释，为后世提供了更多关于茶的知识和理解。'
+},
+'《岕茶汇钞》': { 
+	imageSrc: 'images/《岕茶汇钞》.jpg',
+	author: '冒襄，清代。',
+	description: '《岕茶汇钞》由冒襄撰写，是清代茶书之一，书中详细记载了岕茶的相关内容，为研究该时期茶文化提供了重要文献。'
+},
+'《茶话》': { 
+	imageSrc: 'images/《茶话》.jpg', 
+	author: '陈继儒，清代。',
+	description: '《茶话》由陈继儒所著，书中涉及茶文化的讨论，反映了作者对茶的见解和体会，是清代茶学著作的一部分。'
+}
+};
+
+
+myChart.on('click', (params) => {
+const nodeName = params.data.name;
+if (nodeName in nodeActions) {
+	const action = nodeActions[nodeName];
+	showModal(action.imageSrc, action.author, action.description);
+}
+});
+	window.addEventListener('resize', () => myChart.resize());
+</script>
+
+</body>
+</html>
